@@ -35,12 +35,12 @@ public final class FakePayScreen extends Screen {
 
         nameField = new TextFieldWidget(this.textRenderer, cx - 100, top + 26, 200, 20, Text.literal("Tên"));
         nameField.setMaxLength(16);
-        nameField.setPlaceholder(Text.literal("Tên (vd: SoloplayerVN)"));
+        nameField.setPlaceholder(Text.literal("Nhập tên..."));
         this.addDrawableChild(nameField);
 
         amountField = new TextFieldWidget(this.textRenderer, cx - 100, top + 52, 200, 20, Text.literal("Số tiền"));
         amountField.setMaxLength(16);
-        amountField.setPlaceholder(Text.literal("Số tiền (vd: 20B)"));
+        amountField.setPlaceholder(Text.literal("Nhập số tiền..."));
         this.addDrawableChild(amountField);
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Gửi Pay giả"), btn -> {
