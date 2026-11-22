@@ -1,0 +1,43 @@
+name: Build JAR
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Find Gradle directory and Build
+        run: |
+          GRADLE_FILE=$(find . -maxdepth 3 -name "build.gradle" | head -n 1)
+          if [ -z "$GRADLE_FILE" ]; then
+            echo "Lỗi: Không tìm thấy build.gradle!"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLE_FILE")
+          echo "Đang build tại thư mục: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          chmod +x gradlew || true
+          if [ -f "./gradlew" ]; then
+            ./gradlew build --no-daemon
+          else
+            gradle build --no-daemon
+          fi
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mod-jar
+          path: "**/build/libs/*.jar"
