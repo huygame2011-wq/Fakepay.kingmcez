@@ -79,7 +79,6 @@ public final class FakeStatsScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        this.renderBackground(ctx, mouseX, mouseY, delta);
         super.render(ctx, mouseX, mouseY, delta);
         int cx = this.width / 2;
         int top = Math.max(20, this.height / 2 - 95);
