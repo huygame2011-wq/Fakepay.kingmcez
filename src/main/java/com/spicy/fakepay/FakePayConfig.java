@@ -2,48 +2,66 @@ package com.spicy.fakepay;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
-
-import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.fabricmc.loader.api.FabricLoader;
 
-/** Cấu hình lưu tại .minecraft/config/fakepay.json. Chỉ ghi khi đổi trạng thái, không ghi mỗi frame. */
 public final class FakePayConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("fakepay.json");
+    private static final Path FILE = FabricLoader.getInstance()
+            .getConfigDir()
+            .resolve("fakepay.json");
 
-    public boolean enabled = false;
-    public boolean minimized = false;
-    public int buttonX = 10;
-    public int buttonY = 60;
-    public String lastName = "";
-    public String lastAmount = "";
+    private static FakePayConfig instance;
 
-    private static FakePayConfig instance = new FakePayConfig();
+    public boolean enabled = true;
+    public int buttonX = 12;
+    public int buttonY = 12;
 
-    public static FakePayConfig get() { return instance; }
+    public boolean fakeStatsEnabled = false;
+    public String fakeMoney = "3.7B";
+    public String fakeShard = "265";
+    public String fakeKills = "11";
+    public String fakeDeaths = "22";
+    public int statsHudX = 12;
+    public int statsHudY = 30;
 
-    public static void load() {
-        try {
-            if (Files.exists(FILE)) {
-                FakePayConfig c = GSON.fromJson(Files.readString(FILE, StandardCharsets.UTF_8), FakePayConfig.class);
-                if (c != null) instance = c;
-            }
-        } catch (Exception e) {
-            FakePayMod.LOGGER.warn("Không đọc được fakepay.json, dùng mặc định: {}", e.toString());
-            instance = new FakePayConfig();
+    public static FakePayConfig get() {
+        if (instance == null) {
+            instance = load();
         }
-        if (instance.lastName == null) instance.lastName = "";
-        if (instance.lastAmount == null) instance.lastAmount = "";
+        return instance;
     }
 
-    public static void save() {
+    private static FakePayConfig load() {
+        if (Files.exists(FILE)) {
+            try (Reader r = Files.newBufferedReader(FILE, StandardCharsets.UTF_8)) {
+                FakePayConfig cfg = GSON.fromJson(r, FakePayConfig.class);
+                if (cfg != null) {
+                    if (cfg.fakeMoney == null || cfg.fakeMoney.isBlank()) cfg.fakeMoney = "3.7B";
+                    if (cfg.fakeShard == null || cfg.fakeShard.isBlank()) cfg.fakeShard = "265";
+                    if (cfg.fakeKills == null || cfg.fakeKills.isBlank()) cfg.fakeKills = "11";
+                    if (cfg.fakeDeaths == null || cfg.fakeDeaths.isBlank()) cfg.fakeDeaths = "22";
+                    return cfg;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        FakePayConfig cfg = new FakePayConfig();
+        cfg.save();
+        return cfg;
+    }
+
+    public void save() {
         try {
-            Files.writeString(FILE, GSON.toJson(instance), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            FakePayMod.LOGGER.warn("Không ghi được fakepay.json: {}", e.toString());
+            Files.createDirectories(FILE.getParent());
+            try (Writer w = Files.newBufferedWriter(FILE, StandardCharsets.UTF_8)) {
+                GSON.toJson(this, w);
+            }
+        } catch (Exception ignored) {
         }
     }
 }
